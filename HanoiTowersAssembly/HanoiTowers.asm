@@ -51,9 +51,20 @@ j end
 #Recursive implementation of the Hanoi Towers algorithm
 #public static void hanoi_function(int n, int start, int end, int aux)
 hanoi_function:
+#Save return address in the stack
+addi $sp, $sp, -4
+sw $ra, 0($sp)
 #Check if the disk is equal to 1, go to the base_case
 beq $a0, $s7, base_case
-
+#Substract 1 to the number of disks
+addi $a0, $a0, -1
+#Backup of $a2
+add $s6, $zero, $a2
+#Invert the aux rod and end rod
+add $a2, $zero, $a3
+add $a3, $zero, $s6
+#Call the recursive function
+jal hanoi_function
 
 
 #Base case when the number of disks is equal to 1
@@ -62,10 +73,15 @@ base_case:
 addi $a1, $a1, -4
 #Load the value from the start rod
 lw $v0, 0($a1)
+#Set a 0 in the current address of the start rod
+sw $zero, 0($a1)
 #Save the value into the end rod
 sw $v0, 0($a2)
 #Increment the stack pointer of $a2 for the next value to be stored
 addi $a2, $a2, 4
-
+#Return to the Hanoi function
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
 
 end:

@@ -5,7 +5,7 @@
 .text
 
 #Store in $s0 the number of disks
-addi $s0, $zero, 1
+addi $s0, $zero, 3
 #Store in $s1 the high portion of the initial address
 addi $s1, $zero, 0x1001
 #Shift left 16 bits for the low portion of the initial address
@@ -66,6 +66,41 @@ add $a3, $zero, $s6
 #Call the recursive function
 jal hanoi_function
 
+#Backup of $a2
+add $s6, $zero, $a2
+#Revert to the original addresses for the aux rod and end rod
+add $a2, $zero, $a3
+add $a3, $zero, $s6
+#Substract 4 from the stack pointer of $a1 to get the value
+addi $a1, $a1, -4
+#Load the value from the start rod
+lw $v0, 0($a1)
+#Set a 0 in the current address of the start rod
+sw $zero, 0($a1)
+#Save the value into the end rod
+sw $v0, 0($a2)
+#Increment the stack pointer of $a2 for the next value to be stored
+addi $a2, $a2, 4
+#Substract 1 to the number of disks
+addi $a0, $a0, -1
+#Backup of $a1
+add $s6, $zero, $a1
+#Invert the aux rod and start rod
+add $a1, $zero, $a3
+add $a3, $zero, $s6
+#Call the recursive function again
+jal hanoi_function
+#Backup of $a1
+add $s6, $zero, $a1
+#Invert the aux rod and start rod
+add $a1, $zero, $a3
+add $a3, $zero, $s6
+#Restore the disk of the previous call
+addi $a0, $a0, 1
+#Get the return address to return to the main function
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
 
 #Base case when the number of disks is equal to 1
 base_case:
@@ -79,7 +114,9 @@ sw $zero, 0($a1)
 sw $v0, 0($a2)
 #Increment the stack pointer of $a2 for the next value to be stored
 addi $a2, $a2, 4
-#Return to the Hanoi function
+#Restore the disk of the previous call
+addi $a0, $a0, 1
+#Get the return address to return to the Hanoi function
 lw $ra, 0($sp)
 addi $sp, $sp, 4
 jr $ra
